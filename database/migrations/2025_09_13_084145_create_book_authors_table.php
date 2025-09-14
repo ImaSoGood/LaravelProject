@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('book_authors', function (Blueprint $table) {
-            $table->foreignId('book_id')->from('books')->references('book_id')->on('books');
-            $table->foreignId('author_id')->from('authors')->references('author_id')->on('authors');
+            $table->foreignId('book_id')->from('books')->references('book_id')->on('books')->onDelete('cascade');
+            $table->foreignId('author_id')->from('authors')->references('author_id')->on('authors')->onDelete('cascade');
         });
     }
 

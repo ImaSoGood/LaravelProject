@@ -8,3 +8,5 @@ Route::get('/', function () {
 });
 
 Route::get('/page', [LibraryController::class, 'index']);
+
+Route::get('/all-books', [LibraryController::class, 'getAllBooks']);

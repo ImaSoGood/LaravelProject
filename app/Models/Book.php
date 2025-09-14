@@ -14,4 +14,12 @@ class Book extends Model
       'title',
       'published_at'
     ];
+
+    public function authors(){
+        return $this->belongsToMany(Author::class, 'book_authors', 'book_id','author_id');
+    }
+
+    public function genres(){
+        return $this->belongsToMany(Genre::class, 'book_genres', 'book_id', 'genre_id');
+    }
 }
