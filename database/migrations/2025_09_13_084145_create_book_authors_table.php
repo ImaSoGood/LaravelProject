@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('book_authors', function (Blueprint $table) {
             $table->foreignId('book_id')->from('books')->references('book_id')->on('books')->onDelete('cascade');
             $table->foreignId('author_id')->from('authors')->references('author_id')->on('authors')->onDelete('cascade');
+
+            //$table->softDeletes();
         });
     }
 

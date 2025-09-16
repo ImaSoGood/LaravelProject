@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Author extends Model
 {
+    //use SoftDeletes;
+
     protected $table = 'authors';
     protected $primaryKey = 'author_id';
     protected $fillable = ['full_name'];

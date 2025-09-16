@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Genre extends Model
 {
+    //use SoftDeletes;
+
     protected $table = 'genres';
     protected $primaryKey = 'genre_id';
     protected $fillable = ['name'];

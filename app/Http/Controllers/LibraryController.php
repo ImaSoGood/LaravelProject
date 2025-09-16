@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Genre;
@@ -12,6 +11,15 @@ use Nette\Schema\ValidationException;
 
 class LibraryController extends Controller
 {
+    public function getBooksDistr(Request $request)//Распределитель функций обработки запроса (с параметрами/без параметров)
+    {
+        if ($request->hasAny(['title', 'author', 'genre'])) {
+            return $this->getBooks($request);
+        }
+
+        return $this->getAllBooks();
+    }
+
     private function authorsExist(array $ids) :bool //Проверим, существуют ли такие авторы
     {
         if (empty($ids)) {
@@ -19,7 +27,6 @@ class LibraryController extends Controller
         }
 
         $existingCount = Author::whereIn('author_id', $ids)->count();
-
         return $existingCount === count($ids);
     }
 
@@ -30,19 +37,16 @@ class LibraryController extends Controller
         }
 
         $existingCount = Genre::whereIn('genre_id', $ids)->count();
-
         return $existingCount === count($ids);
     }
 
-    private function getGenreIds(array $genres) :array
+    private function bookExist($id)
     {
-        if(!empty($genres)){
-            $genres = Genre::whereIn('name', $genres)->get();
-
-            return $genres->pluck('id')->toArray();
+        if (empty($id)) {
+            return false;
         }
 
-        return [];
+        return Book::where('book_id', $id)->exists();
     }
 
     /*
@@ -56,7 +60,44 @@ class LibraryController extends Controller
         try {
             $books = Book::with(['authors', 'genres'])->orderByDesc('book_id')->get();
             return json_encode($books);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
+    public function getBooks(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'title' => 'sometimes|string|max:255',
+                'author' => 'sometimes|string|max:100',
+                'genre' => 'sometimes|string|max:50',
+            ]);
+
+            $title = $validated['title'] ?? null;
+            $author = $validated['author'] ?? null;
+            $genre = $validated['genre'] ?? null;
+
+            $books = Book::with(['authors', 'genres'])
+                ->when(!empty($title), function ($query) use ($title) {
+                    return $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($title) . '%']);
+                })
+                ->when(!empty($author), function ($query) use ($author) {
+                    return $query->whereHas('authors', function ($q) use ($author) {
+                        $q->whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($author) . '%']);
+                    });
+                })
+                ->when(!empty($genre), function ($query) use ($genre) {
+                    return $query->whereHas('genres', function ($q) use ($genre) {
+                        $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($genre) . '%']);
+                    });
+                })
+                ->orderByDesc('book_id')
+                ->get();
+
+            return json_encode($books);
+        } catch (ValidationException $e){
+            return response()->json(['error' => $e->getMessage()], 444);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -112,5 +153,20 @@ class LibraryController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
 
+    }
+
+    public function deleteBook($id)
+    {
+        try{
+            if($this->bookExist($id)){
+                $book = Book::find($id);
+                $book->delete();
+                return response()->json(['success' => 'Удалена запись с "book_id" = '.$id], 500);
+            }
+            else
+                return response()->json(['error' => 'Не существует записи с "book_id" = '.$id], 500);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

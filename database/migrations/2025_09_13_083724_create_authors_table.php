@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('authors', function (Blueprint $table) {
             $table->id('author_id')->autoIncrement();
-            $table->string('full_name')->isNotEmpty();
+            $table->string('full_name', 100)->isNotEmpty();
+
+            //$table->softDeletes();
         });
     }
 

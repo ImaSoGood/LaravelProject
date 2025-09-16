@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Book extends Model
 {
+    //use SoftDeletes;
+
     protected $table = 'books';
     protected $guarded = [];
     protected $primaryKey = 'book_id';

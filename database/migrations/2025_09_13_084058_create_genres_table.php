@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('genres', function (Blueprint $table) {
             $table->id('genre_id')->autoIncrement();
-            $table->string('name')->isNotEmpty();
+            $table->string('name', 50)->isNotEmpty();
+
+            //$table->softDeletes();
         });
     }
 

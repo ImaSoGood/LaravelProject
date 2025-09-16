@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('books', function (Blueprint $table) {
             $table->id('book_id')->autoIncrement();
-            $table->string('title')->isNotEmpty();
+            $table->string('title', 255)->isNotEmpty();
             $table->date('published_at')->isNotEmpty();
+
+            //$table->softDeletes();
         });
     }
 
