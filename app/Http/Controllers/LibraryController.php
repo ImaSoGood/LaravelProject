@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BookResource;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Genre;
@@ -59,7 +60,7 @@ class LibraryController extends Controller
     {
         try {
             $books = Book::with(['authors', 'genres'])->orderByDesc('book_id')->get();
-            return json_encode($books);
+            return BookResource::collection($books);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -80,22 +81,21 @@ class LibraryController extends Controller
 
             $books = Book::with(['authors', 'genres'])
                 ->when(!empty($title), function ($query) use ($title) {
-                    return $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($title) . '%']);
+                    return $query->whereRaw('LOWER(title) LIKE ?', ['%' . mb_strtolower($title, 'UTF-8') . '%']);
                 })
                 ->when(!empty($author), function ($query) use ($author) {
                     return $query->whereHas('authors', function ($q) use ($author) {
-                        $q->whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($author) . '%']);
+                        $q->whereRaw('LOWER(full_name) LIKE ?', ['%' . mb_strtolower($author, 'UTF-8') . '%']);
                     });
                 })
                 ->when(!empty($genre), function ($query) use ($genre) {
                     return $query->whereHas('genres', function ($q) use ($genre) {
-                        $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($genre) . '%']);
+                        $q->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower($genre, 'UTF-8') . '%']);
                     });
                 })
                 ->orderByDesc('book_id')
                 ->get();
-
-            return json_encode($books);
+            return BookResource::collection($books);
         } catch (ValidationException $e){
             return response()->json(['error' => $e->getMessage()], 444);
         } catch (Exception $e) {
@@ -109,7 +109,7 @@ class LibraryController extends Controller
             $book = Book::with(['authors', 'genres'])->find($id);
             if($book === null || $book->count() < 1)
                 return response('', 404);
-            return json_encode($book);
+            return BookResource::collection($book);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -145,7 +145,8 @@ class LibraryController extends Controller
             $book->authors()->attach($authorIds);
             $book->genres()->attach($genreIds);
 
-            return response()->json($book->load(['authors', 'genres']));
+            //return response()->json($book->load(['authors', 'genres']));
+            return BookResource::collection($book);
         }catch (ValidationException $e){
             return response()->json(['error' => $e->getMessage()], 444);
         }
