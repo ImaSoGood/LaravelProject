@@ -1,61 +1,42 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# О проекте
 
-## About Laravel
+API-сервис предметной области "Библиотека". Написан с использованием языка PHP совместно с фрэймворком Laravel. СУБД - SQLlite.
+Призван выполнять следующие действия:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Добавлять данные о книге в таблицу(добавляется только Книга, за ней закрепляются Жанры и Авторы).
+- Удалять данные о книге по идентификатору.
+- Собирать список всег хранящихся Книг.
+- Собирать данные одной Книги по ее идентификатору.
+- Собирать данные книг, попадающих по описанию по следующим параметрам: Имя автора, заголовок книги, жанры книги.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Для удобства тестирования, созданы сидеры для наполнения базы данных. Данных для генерации Faker текущих записей - вполне достаточно для заполнения большим кол-вом данных, без полных дубликатов.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Инструкция к пользованию
 
-## Learning Laravel
+После клонирования проекта, необходимо: 
+- в .env файле - указать СУБД sqlite
+- создать миграцию и засеять бд (--seed)
+- запустить локальный веб-сервер
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Для работы с API-запроами, необходимо к адресу веб-сервера делать преписку "/api". Далее идут команды:
+- [POST] /books        Добавить книгу, посылаются данные в JSON-формате. Пример отправки данных: { "title": "Название книги", "published_at": "2023-12-15","author_ids": [1, 2, 3],"genre_ids": [1, 2] }
+- [GET] /books         Полусить список всех книг с авторами и жанрами.
+- [GET] /books/{id}    Получить информацию о конкретной книге, авторе и жанрах по ее идентификатору.
+- [GET] /books         Получить список отфильтрованных книг. Есть 3 фильтра для книг: title, author, genre. Добавить можно произвольное кол-во фильтров, главное не отпускать пустой парметр.
+    - &check; /books?title=война&author=толстой&genre=драмма    | Все параметеры не пустые
+    - &check; /books?title=война&genre=драмма                   | Все параметеры не пустые
+    - &check; /books?title=война                                | Все параметеры не пустые
+    - &cross; /books?title=война&author=&genre=драмма           | Отсутствуеи значение параметра author - ошибка
+- С учетом использования СУБД SQLite, не было учтено, что ядро СУБД, не предназначено для работы с символами Unicode таблицы (только ASCII). С этой особенностью, нельзя использовать запросы с учетом регистронезависимости, так как LOWER, UPPER и т.д. - не работают 
+  с латиницей (Unicode symbols). Для этого нужно немного по крамсать запрос. Теперь для параметров на латинице, нужно обрезать первую букву слова, например:
+    - &cross; Изначальное слово "Война" или "война" - поиск не сработает.    &check; Изначальное слово "ойна" - поиск сработает
+    - &cross; Изначальное слово "Техника" или "техника" - поиск не сработает.    &check; Изначальное слово "ехника" - поиск сработает
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Что я понял за время работы с Laravel
+Изначально я не был знаком с фрэймворками для php. Для меня было открытием множество автоматизированных процессов описания Backend части.
+- модель MVC, иерархию обработки пользовательских запросов.
+- принцип миграции БД и работы с таблицами посредством PHP.
+- как производится описание шаблона создания тестовой еденицы данных в Factory посредством Faker. Наполнение БД сгенерированными данными, посредством Seeder.
