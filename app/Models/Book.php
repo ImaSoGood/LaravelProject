@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Book extends Model
 {
-    //use SoftDeletes;
     use HasFactory;
 
     protected $table = 'books';

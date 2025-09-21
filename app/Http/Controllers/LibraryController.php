@@ -109,7 +109,7 @@ class LibraryController extends Controller
             $book = Book::with(['authors', 'genres'])->find($id);
             if($book === null || $book->count() < 1)
                 return response('', 404);
-            return BookResource::collection($book);
+            return new BookResource($book);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -145,8 +145,7 @@ class LibraryController extends Controller
             $book->authors()->attach($authorIds);
             $book->genres()->attach($genreIds);
 
-            //return response()->json($book->load(['authors', 'genres']));
-            return BookResource::collection($book);
+            return new BookResource($book->load(['authors', 'genres']));
         }catch (ValidationException $e){
             return response()->json(['error' => $e->getMessage()], 444);
         }
